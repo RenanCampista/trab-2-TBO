@@ -5,7 +5,8 @@
 
 typedef struct Node Node;
 
-typedef  enum {
+typedef enum {
+    UNDEFINED = -1,
     SERVER = 0,
     CLIENT = 1,
     MONITOR = 2

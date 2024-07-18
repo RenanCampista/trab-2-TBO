@@ -3,6 +3,7 @@
 
 typedef struct Edge Edge;
 
+
 /**
  * @brief Cria uma nova aresta com o vizinho e peso especificados.
  * @param neighbor O número do vizinho.

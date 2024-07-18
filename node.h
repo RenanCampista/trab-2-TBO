@@ -12,6 +12,7 @@ typedef enum {
     MONITOR = 2
 } NodeType;
 
+
 /**
  * @brief Cria um novo nó.
  * @return Ponteiro para o novo nó.

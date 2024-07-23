@@ -136,6 +136,12 @@ void problem_solve(Network *network, char *output_file) {
     Problem *problem = problem_construct(network);
     problem_calculate_min_costs_from_edges(problem);
     problem_process_rtt(problem);
+    qsort(
+        problem->round_trip_times, 
+        network_get_num_servers(network) * network_get_num_clients(network), 
+        sizeof(RoundTripTime *), 
+        round_trip_compare
+    );
     problem_print(problem, output_file);
     problem_destruct(problem);
 }

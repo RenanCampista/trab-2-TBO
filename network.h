@@ -1,26 +1,30 @@
-#if !defined(_NETWORK_)
-#define _NETWORK_
+#if !defined(_NETWORK_H_)
+#define _NETWORK_H_
+
+#include "graph.h"
 
 typedef struct Network Network;
 
+Network *network_construct(int num_nodes, int num_servers, int num_clients, int num_monitors);
 
-/**
- * @brief Destrói uma rede, liberando a memória alocada.
- * @param network Ponteiro para a rede a ser destruída.
- */
 void network_destruct(Network *network);
 
-/**
- * @brief Lê uma rede de um arquivo.
- * @param file_name Nome do arquivo.
- * @return Ponteiro para a rede.
- */
+int network_get_num_nodes(Network *network);
+
+int network_get_num_servers(Network *network);
+
+int network_get_num_clients(Network *network);
+
+int network_get_num_monitors(Network *network);
+
+int network_get_server(Network *network, int index);
+
+int network_get_client(Network *network, int index);
+
+int network_get_monitor(Network *network, int index);
+
+Graph *network_get_graph(Network *network);
+
 Network *network_read(char *file_name);
 
-/**
- * @brief Imprime as informações de uma rede.
- * @param network Ponteiro para a rede.
- */
-void network_print(Network *network);
-
-#endif // _NETWORK_
+#endif // _NETWORK_H_

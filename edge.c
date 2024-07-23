@@ -1,34 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "edge.h"
 
 struct Edge {
-    int neighbor;
+    int dest;
     double cost;
 };
 
-Edge* edge_construct(int neighbor, double cost) {
-    Edge *c = (Edge *)calloc(1, sizeof(Edge));
-    if (c == NULL)
-        exit(printf("Error: edge_construct failed to allocate memory.\n"));
-    c->neighbor = neighbor;
-    c->cost = cost;
-    return c;
+Edge *edge_construct(int dest, double cost) {
+    Edge *edge = (Edge *) malloc(sizeof(Edge));
+
+    if (edge == NULL)
+        exit(printf("Error: edge_create failed to allocate memory.\n"));
+
+    edge->dest = dest;
+    edge->cost = cost;
+    return edge;
 }
 
 void edge_destruct(Edge *edge) {
     free(edge);
 }
 
-int edge_get_neighbor(Edge *edge) {
-    return edge->neighbor;
+int edge_get_dest(Edge *edge) {
+    return edge->dest;
 }
 
 double edge_get_cost(Edge *edge) {
     return edge->cost;
-}
-
-void edge_print(Edge *edge) {
-    printf("Neighbor: %d, cost: %f\n", edge_get_neighbor(edge), edge_get_cost(edge));
 }

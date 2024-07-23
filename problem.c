@@ -122,7 +122,7 @@ void problem_print(Problem *problem, char *output_file) {
     for (int i = 0; i < network_get_num_servers(problem->network) * network_get_num_clients(problem->network); i++) {
         fprintf(
             file, 
-            "%d %d %lf\n", 
+            "%d %d %.16lf\n", 
             round_trip_time_get_src(problem->round_trip_times[i]), 
             round_trip_time_get_dest(problem->round_trip_times[i]), 
             round_trip_time_get_rtt(problem->round_trip_times[i])

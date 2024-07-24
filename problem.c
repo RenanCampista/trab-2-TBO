@@ -122,7 +122,7 @@ void problem_print(Problem *problem, char *output_file) {
     for (int i = 0; i < network_get_num_servers(problem->network) * network_get_num_clients(problem->network); i++) {
         fprintf(
             file, 
-            "%d %d %lf\n", 
+            "%d %d %.16lf\n", 
             round_trip_time_get_src(problem->round_trip_times[i]), 
             round_trip_time_get_dest(problem->round_trip_times[i]), 
             round_trip_time_get_rtt(problem->round_trip_times[i])
@@ -136,6 +136,12 @@ void problem_solve(Network *network, char *output_file) {
     Problem *problem = problem_construct(network);
     problem_calculate_min_costs_from_edges(problem);
     problem_process_rtt(problem);
+    qsort(
+        problem->round_trip_times, 
+        network_get_num_servers(network) * network_get_num_clients(network), 
+        sizeof(RoundTripTime *), 
+        round_trip_compare
+    );
     problem_print(problem, output_file);
     problem_destruct(problem);
 }

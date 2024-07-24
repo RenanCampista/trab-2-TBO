@@ -10,7 +10,7 @@ void graph_destruct(Graph *graph);
 
 int graph_get_num_nodes(Graph *graph);
 
-int graph_get_cost_from_edge(Graph *graph, int src, int dest);
+double graph_get_cost_from_edge(Graph *graph, int src, int dest);
 
 void graph_add_edge(Graph *graph, int src, int dest, double cost);
 

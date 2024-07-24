@@ -32,3 +32,11 @@ int round_trip_time_get_dest(RoundTripTime *round_trip_time) {
 double round_trip_time_get_rtt(RoundTripTime *round_trip_time) {
     return round_trip_time->rtt;
 }
+
+int round_trip_compare(const void *a, const void *b) {
+    RoundTripTime *round_trip_time_a = *(RoundTripTime **)a;
+    RoundTripTime *round_trip_time_b = *(RoundTripTime **)b;
+    if (round_trip_time_a->rtt < round_trip_time_b->rtt)        return -1;
+    else if (round_trip_time_a->rtt > round_trip_time_b->rtt)   return 1;
+    else                                                        return 0;
+}

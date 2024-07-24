@@ -40,7 +40,7 @@ int graph_get_num_nodes(Graph *graph) {
     return graph->num_nodes;
 }
 
-int graph_get_cost_from_edge(Graph *graph, int src, int dest) {
+double graph_get_cost_from_edge(Graph *graph, int src, int dest) {
     for (int i = 0; i < vector_size(graph->adjacency_list[src]); i++) {
         Edge *edge = (Edge *) vector_get(graph->adjacency_list[src], i);
         if (edge_get_dest(edge) == dest)

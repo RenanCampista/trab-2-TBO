@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <float.h>
 
-#include "PQ.h"
-#include "dijkstra.h"
+#include "../libs/PQ.h"
+#include "../libs/dijkstra.h"
 
 void initialize_single_source(Graph *graph, PQ *h, double *dist, int src) {
     int num_nodes = graph_get_num_nodes(graph);

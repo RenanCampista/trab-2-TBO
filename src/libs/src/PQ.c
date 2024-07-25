@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "PQ.h"
+
+#include "../libs/PQ.h"
 
 struct PQ {
     Item *pq;

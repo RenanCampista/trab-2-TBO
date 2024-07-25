@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "network.h"
-#include "problem.h"
+#include "../libs/libs/network.h"
+#include "../libs/libs/problem.h"
 
 int main(int argc, char *argv[]) {
     // ./trab2 <path_input_file> <path_output_file>

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "network.h"
+#include "../libs/network.h"
 
 struct Network {
     Graph *graph;

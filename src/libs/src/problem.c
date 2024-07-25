@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "network.h"
-#include "edge.h"
-#include "dijkstra.h"
-#include "problem.h"
-#include "round_trip_time.h"
+#include "../libs/network.h"
+#include "../libs/edge.h"
+#include "../libs/dijkstra.h"
+#include "../libs/problem.h"
+#include "../libs/round_trip_time.h"
 
 typedef struct Problem Problem;
 struct Problem {

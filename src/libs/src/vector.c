@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vector.h"
+#include "../libs/vector.h"
 
 static const int VECTOR_INIT_SIZE = 10;
 static const int VECTOR_GROWTH_RATE = 2;

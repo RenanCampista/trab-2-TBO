@@ -1,5 +1,6 @@
 all:
-	gcc -Wall -Wextra -Werror -g -pg -o trab2 *.c -lm
+#	gcc -Wall -Wextra -Werror -g -pg -o trab2 *.c -lm
+	gcc -Wall -Wextra -Werror -o trab2 src/client/main.c src/libs/src/*.c
 clean:
 	rm trab2
 run:

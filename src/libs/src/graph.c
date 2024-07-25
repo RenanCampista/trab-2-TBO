@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "graph.h"
-#include "edge.h"
-#include "vector.h"
+#include "../libs/graph.h"
+#include "../libs/edge.h"
+#include "../libs/vector.h"
 
 struct Graph {
     Vector **adjacency_list;

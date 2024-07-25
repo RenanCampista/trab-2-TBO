@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "edge.h"
+
+#include "../libs/edge.h"
 
 struct Edge {
     int dest;

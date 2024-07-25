@@ -31,7 +31,7 @@ void adjacency_matrix_destruct(AdjacencyMatrix *am) {
     free(am);
 }
 
-void adjacency_matrix_add_cost(AdjacencyMatrix *am, int src, int dest, double cost) {
+void adjacency_matrix_set_cost(AdjacencyMatrix *am, int src, int dest, double cost) {
     am->nodes[src][dest] = cost;
 }
 
@@ -40,5 +40,5 @@ int adjacency_matrix_get_num_nodes(AdjacencyMatrix *am) {
 }
 
 double adjacency_matrix_get_cost(AdjacencyMatrix *am, int src, int dest) {
-    return am->nodes[src][dest];
+    return am->nodes[src][dest] == 0 ? -1 : am->nodes[src][dest];
 }

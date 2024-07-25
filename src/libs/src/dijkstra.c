@@ -19,8 +19,7 @@ void relax(Graph *graph, PQ *h, double *dist, int u) {
 
     for (int i = 0; i < num_nodes; i++) {
         double w = graph_get_cost_from_edge(graph, u, i);
-        if (w == -1) continue;
-        if (dist[i] > u_priority + w) {
+        if (dist[i] > u_priority + w && w != -1) {
             dist[i] = u_priority + w;
             PQ_decrease_key(h, i, u_priority + w);
         }

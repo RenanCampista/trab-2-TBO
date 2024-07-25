@@ -8,7 +8,7 @@ AdjacencyMatrix *adjacency_matrix_construct(int num_nodes);
 
 void adjacency_matrix_destruct(AdjacencyMatrix *am);
 
-void adjacency_matrix_add_cost(AdjacencyMatrix *am, int src, int dest, double cost);
+void adjacency_matrix_set_cost(AdjacencyMatrix *am, int src, int dest, double cost);
 
 int adjacency_matrix_get_num_nodes(AdjacencyMatrix *am);
 

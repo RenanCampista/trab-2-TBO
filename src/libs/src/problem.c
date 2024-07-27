@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include "../libs/network.h"
-#include "../libs/edge.h"
 #include "../libs/dijkstra.h"
 #include "../libs/problem.h"
 #include "../libs/round_trip_time.h"

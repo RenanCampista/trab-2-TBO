@@ -47,7 +47,7 @@ PQ *PQ_init(int maxN) {
     return pq;
 }
 
-void PQ_insert(PQ *pq, int data, double priority) {
+void PQ_insert(PQ *pq, int data, long double priority) {
     Item i = {data, priority};
 
     pq->n++;
@@ -68,11 +68,11 @@ int PQ_min(PQ *pq) {
     return pq->pq[1].id;
 }
 
-double PQ_get_priority(PQ *pq, int id) {
+long double PQ_get_priority(PQ *pq, int id) {
     return pq->pq[pq->map[id]].value;
 }
 
-void PQ_decrease_key(PQ *pq, int id, double value) {
+void PQ_decrease_key(PQ *pq, int id, long double value) {
     int i = pq->map[id];
     value(pq->pq[i]) = value;
     fix_up(pq, pq->pq, i);

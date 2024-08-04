@@ -3,12 +3,12 @@
 
 typedef struct Edge Edge;
 
-Edge *edge_construct(int dest, double cost);
+Edge *edge_construct(int dest, long double cost);
 
 void edge_destruct(Edge *edge);
 
 int edge_get_dest(Edge *edge);
 
-double edge_get_cost(Edge *edge);
+long double edge_get_cost(Edge *edge);
 
 #endif // _EDGE_H_

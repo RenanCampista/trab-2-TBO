@@ -5,11 +5,11 @@
 
 struct Edge {
     int dest;
-    double cost;
+    long double cost;
 };
 
 
-Edge *edge_construct(int dest, double cost) {
+Edge *edge_construct(int dest, long double cost) {
     Edge *edge = (Edge *) calloc(1, sizeof(Edge));
     if (edge == NULL)
         exit(printf("Error: edge_construct: could not allocate memory.\n"));
@@ -26,6 +26,6 @@ int edge_get_dest(Edge *edge) {
     return edge->dest;
 }
 
-double edge_get_cost(Edge *edge) {
+long double edge_get_cost(Edge *edge) {
     return edge->cost;
 }

@@ -10,9 +10,9 @@ typedef struct Problem Problem;
 struct Problem {
     Network *network;
     RoundTripTime **round_trip_times;
-    double **dist_servers;
-    double **dist_clients;
-    double **dist_monitors;
+    long double **dist_servers;
+    long double **dist_clients;
+    long double **dist_monitors;
 };
 
 Problem *problem_construct(Network *network) {
@@ -23,9 +23,9 @@ Problem *problem_construct(Network *network) {
     problem->network = network;
     problem->round_trip_times = (RoundTripTime **) calloc(network_get_num_servers(network) * network_get_num_clients(network), sizeof(RoundTripTime *));
 
-    problem->dist_clients = (double **) calloc(network_get_num_clients(network), sizeof(double *));
-    problem->dist_servers = (double **) calloc(network_get_num_servers(network), sizeof(double *));
-    problem->dist_monitors = (double **) calloc(network_get_num_monitors(network), sizeof(double *));
+    problem->dist_clients = (long double **) calloc(network_get_num_clients(network), sizeof(long double *));
+    problem->dist_servers = (long double **) calloc(network_get_num_servers(network), sizeof(long double *));
+    problem->dist_monitors = (long double **) calloc(network_get_num_monitors(network), sizeof(long double *));
 
     if (problem->round_trip_times == NULL || problem->dist_clients == NULL || problem->dist_servers == NULL || problem->dist_monitors == NULL)
         exit(printf("Error: problem_construct failed to allocate memory.\n"));
@@ -65,14 +65,14 @@ void problem_calculate_min_costs_from_edges(Problem *problem) {
         problem->dist_monitors[i] = dijkstra_algorithm(network_get_graph(problem->network), network_get_monitor(problem->network, i));
 }
 
-double RTT(int a, int b, double *dists_a, double *dists_b) {
+long double RTT(int a, int b, long double *dists_a, long double *dists_b) {
     return dists_a[b] + dists_b[a];
 }
 
 void problem_process_rtt(Problem *problem) {
-    double min = 0;
-    double rtt = 0;
-    double rtt_star= 0;
+    long double min = 0;
+    long double rtt = 0;
+    long double rtt_star= 0;
 
     for (int i = 0; i < network_get_num_servers(problem->network); i++) {
         for (int j = 0; j < network_get_num_clients(problem->network); j++) {
@@ -121,7 +121,7 @@ void problem_print(Problem *problem, char *output_file) {
     for (int i = 0; i < network_get_num_servers(problem->network) * network_get_num_clients(problem->network); i++) {
         fprintf(
             file, 
-            "%d %d %.16lf\n", 
+            "%d %d %.16Lf\n", 
             round_trip_time_get_src(problem->round_trip_times[i]), 
             round_trip_time_get_dest(problem->round_trip_times[i]), 
             round_trip_time_get_rtt(problem->round_trip_times[i])

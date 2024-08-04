@@ -6,10 +6,10 @@
 struct RoundTripTime {
     int src;
     int dest;
-    double rtt;
+    long double rtt;
 };
 
-RoundTripTime *round_trip_time_construct(int src, int dest, double rtt) {
+RoundTripTime *round_trip_time_construct(int src, int dest, long double rtt) {
     RoundTripTime *round_trip_time = malloc(sizeof(RoundTripTime));
     round_trip_time->src = src;
     round_trip_time->dest = dest;
@@ -29,7 +29,7 @@ int round_trip_time_get_dest(RoundTripTime *round_trip_time) {
     return round_trip_time->dest;
 }
 
-double round_trip_time_get_rtt(RoundTripTime *round_trip_time) {
+long double round_trip_time_get_rtt(RoundTripTime *round_trip_time) {
     return round_trip_time->rtt;
 }
 

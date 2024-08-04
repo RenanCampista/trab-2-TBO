@@ -33,7 +33,7 @@ int graph_get_num_nodes(Graph *graph) {
     return graph->num_nodes;
 }
 
-double graph_get_cost_from_edge(Graph *graph, int src, int dest) {
+long double graph_get_cost_from_edge(Graph *graph, int src, int dest) {
     ForwardList *adj_list = graph->adjacency_list[src];
     ForwardListIterator it; // Declarar como objeto, não ponteiro
     forward_list_iterator_init(&it, adj_list); // Passar o endereço do objeto
@@ -45,15 +45,15 @@ double graph_get_cost_from_edge(Graph *graph, int src, int dest) {
     return -1;
 }
 
-void graph_add_edge(Graph *graph, int src, int dest, double cost) {
+void graph_add_edge(Graph *graph, int src, int dest, long double cost) {
     forward_list_push_back(graph->adjacency_list[src], edge_construct(dest, cost));
 }
 
 void graph_read(Graph *graph, FILE *file, int num_edges) {
     for (int i = 0; i < num_edges; i++) {
         int src, dest;
-        double cost;
-        fscanf(file, "\n%d %d %lf", &src, &dest, &cost);
+        long double cost;
+        fscanf(file, "\n%d %d %Lf", &src, &dest, &cost);
         graph_add_edge(graph, src, dest, cost);
     }
 }

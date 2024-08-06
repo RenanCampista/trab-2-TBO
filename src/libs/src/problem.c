@@ -6,12 +6,14 @@
 #include "../libs/dijkstra.h"
 #include "../libs/problem.h"
 
+
 typedef struct RoundTripTime RoundTripTime;
 struct RoundTripTime {
     int src;
     int dest;
-    long double rtt;
+    double rtt;
 };
+
 
 int round_trip_compare(const void *a, const void *b) {
     RoundTripTime *round_trip_time_a = (RoundTripTime *)a;
@@ -30,7 +32,7 @@ int round_trip_compare(const void *a, const void *b) {
     }
 }
 
-void calculate_min_distances(Network *network, long double **dist_servers, long double **dist_clients, long double **dist_monitors) {
+void calculate_min_distances(Network *network, double **dist_servers, double **dist_clients, double **dist_monitors) {
     int num_servers = network_get_num_servers(network);
     int num_clients = network_get_num_clients(network);
     int num_monitors = network_get_num_monitors(network);
@@ -38,15 +40,17 @@ void calculate_min_distances(Network *network, long double **dist_servers, long 
 
     for (int i = 0; i < num_servers; i++)
         dist_servers[i] = dijkstra_algorithm(
-            graph,
+            graph, 
             network_get_server(network, i)
         );
+
 
     for (int i = 0; i < num_clients; i++)
         dist_clients[i] = dijkstra_algorithm(
             graph, 
             network_get_client(network, i)
         );
+
 
     for (int i = 0; i < num_monitors; i++)
         dist_monitors[i] = dijkstra_algorithm(
@@ -55,46 +59,39 @@ void calculate_min_distances(Network *network, long double **dist_servers, long 
         );
 }
 
-long double calculate_rtt(int a, int b, long double *dists_a, long double *dists_b) {
+double calculate_rtt(int a, int b, double *dists_a, double *dists_b) {
     return dists_a[b] + dists_b[a];
 }
 
-void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, long double **dist_servers, long double **dist_clients, long double **dist_monitors) {
+void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, double **dist_servers, double **dist_clients, double **dist_monitors) {
     int num_servers = network_get_num_servers(network);
     int num_clients = network_get_num_clients(network);
     int num_monitors = network_get_num_monitors(network);
 
     for (int i = 0; i < num_servers; i++) {
+        int server = network_get_server(network, i);
         for (int j = 0; j < num_clients; j++) {
-            long double rtt = calculate_rtt(
-                network_get_server(network, i), 
-                network_get_client(network, j), 
+            int client = network_get_client(network, j);
+            double rtt = calculate_rtt(
+                server, 
+                client, 
                 dist_servers[i], 
                 dist_clients[j]
             );
 
-            long double min_rtt_star = DBL_MAX;
+            double min_rtt_star = DBL_MAX;
             for (int k = 0; k < num_monitors; k++) {
-                long double rtt_star = calculate_rtt(
-                    network_get_server(network, i), 
-                    network_get_monitor(network, k), 
-                    dist_servers[i], 
-                    dist_monitors[k]
-                ) + calculate_rtt(
-                    network_get_monitor(network, k), 
-                    network_get_client(network, j), 
-                    dist_monitors[k], 
-                    dist_clients[j]
-                );
+                int monitor = network_get_monitor(network, k);
+                double rtt_star = calculate_rtt(server, monitor, dist_servers[i], dist_monitors[k]) +
+                                  calculate_rtt(monitor, client, dist_monitors[k], dist_clients[j]);
 
-                if (rtt_star < min_rtt_star)
+                if (rtt_star < min_rtt_star) 
                     min_rtt_star = rtt_star;
             }
 
             (&round_trip_times[i * num_clients + j])->src = network_get_server(network, i);
             (&round_trip_times[i * num_clients + j])->dest = network_get_client(network, j);
             (&round_trip_times[i * num_clients + j])->rtt = min_rtt_star / rtt;
-
         }
     }
 }
@@ -110,7 +107,7 @@ void print_rtt(Network *network, RoundTripTime *round_trip_times,char *output_fi
     for (int i = 0; i < num_servers * num_clients; i++)
         fprintf(
             file, 
-            "%d %d %.16Lf\n",
+            "%d %d %.16lf\n",
             (&round_trip_times[i])->src, 
             (&round_trip_times[i])->dest, 
             (&round_trip_times[i])->rtt
@@ -124,23 +121,24 @@ void problem_solve(Network *network, char *output_file) {
     int num_clients = network_get_num_clients(network);
     int num_monitors = network_get_num_monitors(network);
     RoundTripTime *round_trip_times = malloc(num_servers * num_clients * sizeof(RoundTripTime));
-    long double **dist_servers = malloc(num_servers * sizeof(long double *));
-    long double **dist_clients = malloc(num_clients * sizeof(long double *));
-    long double **dist_monitors = malloc(num_monitors * sizeof(long double *));
+    double **dist_servers = malloc(num_servers * sizeof(double *));
+    double **dist_clients = malloc(num_clients * sizeof(double *));
+    double **dist_monitors = malloc(num_monitors * sizeof(double *));
 
-    if (round_trip_times == NULL || dist_servers == NULL || dist_clients == NULL || dist_monitors == NULL)
-        exit(printf("Error: problem_solve failed to allocate memory\n"));
+    if (
+        round_trip_times == NULL || 
+        dist_servers == NULL || 
+        dist_clients == NULL || 
+        dist_monitors == NULL
+    ) exit(printf("Error: problem_solve failed to allocate memory\n"));
 
-    printf("Calculando distâncias mínimas...\n");
     calculate_min_distances(
         network, 
         dist_servers, 
         dist_clients, 
         dist_monitors
     );
-    printf("Distâncias mínimas calculadas.\n");
 
-    printf("Processando RTT...\n");
     start_processing_rtt(
         network, 
         round_trip_times, 
@@ -148,20 +146,15 @@ void problem_solve(Network *network, char *output_file) {
         dist_clients, 
         dist_monitors
     );
-    printf("RTT processado.\n");
 
-    printf("Ordenando RTTs...\n");
     qsort(
         round_trip_times, 
         num_servers * num_clients,
         sizeof(RoundTripTime), 
         round_trip_compare
     );
-    printf("RTTs ordenados.\n");
 
-    printf("Imprimindo RTTs...\n");
     print_rtt(network, round_trip_times, output_file);
-    printf("RTTs impressos.\n");
 
     free(round_trip_times);
     for (int i = 0; i < num_servers; i++)

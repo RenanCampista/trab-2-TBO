@@ -3,10 +3,11 @@
 
 #include "../libs/forward_list.h"
 
+
 struct Node {
     int src;
     int dest;
-    long double cost;
+    double cost;
     Node *next;
 };
 
@@ -19,7 +20,8 @@ struct ForwardListIterator {
     Node *node;
 };
 
-Node *node_construct(int src, int dest, long double cost, Node *next) {
+
+Node *node_construct(int src, int dest, double cost, Node *next) {
     Node *node = malloc(sizeof(Node));
     if (node == NULL)
         exit(printf("Error: node_construct: could not allocate memory.\n"));
@@ -42,16 +44,14 @@ int node_get_dest(Node *node) {
     return node->dest;
 }
 
-long double node_get_cost(Node *node) {
+double node_get_cost(Node *node) {
     return node->cost;
 }
 
 ForwardList *forward_list_construct() {
-    ForwardList *forward_list = malloc(sizeof(ForwardList));
+    ForwardList *forward_list = calloc(1, sizeof(ForwardList));
     if (forward_list == NULL)
         exit(printf("Error: forward_list_construct: could not allocate memory.\n"));
-    forward_list->head = NULL;
-    forward_list->size = 0;
     return forward_list;
 }
 
@@ -65,7 +65,7 @@ void forward_list_destruct(ForwardList *forward_list) {
     free(forward_list);
 }
 
-void forward_list_push_front(ForwardList *forward_list, int src, int dest, long double cost) {
+void forward_list_push_front(ForwardList *forward_list, int src, int dest, double cost) {
     forward_list->head = node_construct(src, dest, cost, forward_list->head);
     forward_list->size++;
 }
@@ -91,7 +91,7 @@ ForwardListIterator *iterator_init(ForwardList *forward_list) {
     return it;
 }
 
-void iterator_destruct(ForwardListIterator *it) {
+void iterator_finish(ForwardListIterator *it) {
     free(it);
 }
 

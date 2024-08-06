@@ -3,6 +3,7 @@
 
 #include "../libs/network.h"
 
+
 struct Network {
     Graph *graph;
     int num_servers;
@@ -13,8 +14,9 @@ struct Network {
     int *monitors;
 };
 
+
 Network *network_construct(int num_nodes, int num_servers, int num_clients, int num_monitors) {
-    Network *network = calloc(1, sizeof(Network));
+    Network *network = malloc(sizeof(Network));
     if (network == NULL)
         exit(printf("Error: network_construct failed to allocate memory.\n"));
 
@@ -23,11 +25,14 @@ Network *network_construct(int num_nodes, int num_servers, int num_clients, int 
     network->num_clients = num_clients;
     network->num_monitors = num_monitors;
 
-    network->servers = calloc(num_servers, sizeof(int));
-    network->clients = calloc(num_clients, sizeof(int));
-    network->monitors = calloc(num_monitors, sizeof(int));
-    if (network->servers == NULL || network->clients == NULL || network->monitors == NULL)
-        exit(printf("Error: network_construct failed to allocate memory.\n"));
+    network->servers = malloc(num_servers * sizeof(int));
+    network->clients = malloc(num_clients * sizeof(int));
+    network->monitors = malloc(num_monitors * sizeof(int));
+    if (
+        network->servers == NULL || 
+        network->clients == NULL || 
+        network->monitors == NULL
+    ) exit(printf("Error: network_construct failed to allocate memory.\n"));
 
     return network;
 }
@@ -94,6 +99,5 @@ Network *network_read(char *file_name) {
 
     graph_read(network->graph, file, num_edges);
     fclose(file);
-
     return network;
 }

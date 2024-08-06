@@ -9,12 +9,13 @@ struct Graph {
     int num_nodes;
 };
 
+
 Graph *graph_construct(int num_nodes) {
-    Graph *g = calloc(1, sizeof(Graph));
+    Graph *g = malloc(sizeof(Graph));
     if (g == NULL)
         exit(printf("Error: graph_construct failed to allocate memory.\n"));
     g->num_nodes = num_nodes;
-    g->adjacency_list = calloc(num_nodes, sizeof(ForwardList *));
+    g->adjacency_list = malloc(num_nodes * sizeof(ForwardList *));
     for (int i = 0; i < num_nodes; i++)
         g->adjacency_list[i] = forward_list_construct();
     return g;
@@ -31,15 +32,15 @@ int graph_get_num_nodes(Graph *graph) {
     return graph->num_nodes;
 }
 
-void graph_add_edge(Graph *graph, int src, int dest, long double cost) {
+void graph_add_edge(Graph *graph, int src, int dest, double cost) {
     forward_list_push_front(graph->adjacency_list[src], src, dest, cost);
 }
 
 void graph_read(Graph *graph, FILE *file, int num_edges) {
     for (int i = 0; i < num_edges; i++) {
         int src, dest;
-        long double cost;
-        fscanf(file, "%d %d %Lf", &src, &dest, &cost);
+        double cost;
+        fscanf(file, "%d %d %lf", &src, &dest, &cost);
         graph_add_edge(graph, src, dest, cost);
     }
 }

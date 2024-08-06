@@ -28,6 +28,7 @@ Network *network_construct(int num_nodes, int num_servers, int num_clients, int 
     network->servers = malloc(num_servers * sizeof(int));
     network->clients = malloc(num_clients * sizeof(int));
     network->monitors = malloc(num_monitors * sizeof(int));
+    
     if (
         network->servers == NULL || 
         network->clients == NULL || 

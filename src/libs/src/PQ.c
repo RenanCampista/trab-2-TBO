@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "../libs/PQ.h"
-
+#include "../libs/item.h"
 
 struct PQ {
     Item *pq;
@@ -66,26 +66,14 @@ int PQ_delmin(PQ *pq) {
     return min.id;
 }
 
-int PQ_min(PQ *pq) {
-    return pq->pq[1].id;
-}
-
-double PQ_get_priority(PQ *pq, int id) {
-    return pq->pq[pq->map[id]].value;
-}
-
 void PQ_decrease_key(PQ *pq, int id, double value) {
     int i = pq->map[id];
     value(pq->pq[i]) = value;
     fix_up(pq, pq->pq, i);
 }
 
-bool PQ_empty(PQ *pq) {
+int PQ_empty(PQ *pq) {
     return pq->n == 0;
-}
-
-int  PQ_size(PQ *pq) {
-    return pq->n;
 }
 
 void PQ_finish(PQ *pq) {

@@ -24,14 +24,14 @@ void relax(Graph *graph, PQ *pq, double *dist, int current_node) {
 
     ForwardListIterator *it = iterator_init(edges);
     while (iterator_has_next(it)) {
-        Node *node = iterator_next(it);
-        if (node == NULL) continue;
+        Edge *edge = iterator_next(it);
+        if (edge == NULL) continue;
 
-        int dest_node = node_get_dest(node);
-        double edge_cost = node_get_cost(node);
-        if (dist[dest_node] > current_priority + edge_cost) {
-            dist[dest_node] = current_priority + edge_cost;
-            PQ_decrease_key(pq, dest_node, current_priority + edge_cost);
+        int dest_edge = edge_get_dest(edge);
+        double edge_cost = edge_get_cost(edge);
+        if (dist[dest_edge] > current_priority + edge_cost) {
+            dist[dest_edge] = current_priority + edge_cost;
+            PQ_decrease_key(pq, dest_edge, current_priority + edge_cost);
         }
     }
     iterator_finish(it);

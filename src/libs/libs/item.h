@@ -2,8 +2,8 @@
 #define ITEM_H
 
 typedef struct {
-  int id;           // identificador do nó
-  double value;     // valor associado ao nó
+  int id;           
+  double value;    
 } Item;
 
 #define id(A)          (A.id)                           // retorna identificador do nó

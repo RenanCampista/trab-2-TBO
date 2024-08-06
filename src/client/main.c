@@ -16,10 +16,6 @@ int main(int argc, char *argv[]) {
     start = clock();
 
     Network *network = network_read(argv[1]);
-    if (network == NULL) {
-        fprintf(stderr, "Error: failed to read network from file.\n");
-        exit(EXIT_FAILURE);
-    }
     problem_solve(network, argv[2]);
     network_destruct(network);
 

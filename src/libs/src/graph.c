@@ -48,3 +48,11 @@ void graph_read(Graph *graph, FILE *file, int num_edges) {
 ForwardList *graph_get_edges(Graph *graph, int node) {
     return graph->adjacency_list[node];
 }
+
+// debug
+// void graph_print(Graph *graph) {
+//     for (int i = 0; i < graph->num_nodes; i++) {
+//         printf("%d: ", i);
+//         forward_list_print(graph->adjacency_list[i]);
+//     }
+// }

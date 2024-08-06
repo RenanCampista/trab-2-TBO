@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <time.h>
+
 #include "../libs/libs/network.h"
 #include "../libs/libs/problem.h"
 

@@ -5,13 +5,12 @@
 #include "../libs/PQ.h"
 #include "../libs/dijkstra.h"
 #include "../libs/forward_list.h"
-#include "../libs/graph.h"
 
 
 void initialize_single_source(PQ *pq, double *dist, int src, int num_nodes) {
-    for (int node = 0; node < num_nodes; node++) {
-        dist[node] = DBL_MAX; 
-        PQ_insert(pq, node, DBL_MAX);
+    for (int i = 0; i < num_nodes; i++) {
+        dist[i] = DBL_MAX; 
+        PQ_insert(pq, i, DBL_MAX);
     }
     dist[src] = 0;
     PQ_decrease_key(pq, src, 0);
@@ -24,8 +23,6 @@ void relax(Graph *graph, PQ *pq, double *dist, int current_node) {
     if (edges == NULL) return;
 
     ForwardListIterator *it = iterator_init(edges);
-    if (it == NULL) return;
-
     while (iterator_has_next(it)) {
         Node *node = iterator_next(it);
         if (node == NULL) continue;
@@ -42,21 +39,14 @@ void relax(Graph *graph, PQ *pq, double *dist, int current_node) {
 
 double *dijkstra_algorithm(Graph *graph, int src) {
     int num_nodes = graph_get_num_nodes(graph);
-    PQ *pq = PQ_init(num_nodes);
-    if (pq == NULL) return NULL;
-
     double *dist = malloc(num_nodes * sizeof(double));
-    if (dist == NULL) {
-        PQ_finish(pq);
-        return NULL;
-    }
+    if (dist == NULL)
+        exit(printf("Errror: dijkstra_algorithm: failed to allocate memory\n"));
+    PQ *pq = PQ_init(num_nodes);
 
     initialize_single_source(pq, dist, src, num_nodes);
-
-    while (!PQ_empty(pq)) {
-        int current_node = PQ_delmin(pq);
-        relax(graph, pq, dist, current_node);
-    }
+    while (!PQ_empty(pq))
+        relax(graph, pq, dist, PQ_delmin(pq));
 
     PQ_finish(pq);
     return dist;

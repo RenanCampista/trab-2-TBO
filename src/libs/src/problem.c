@@ -59,52 +59,69 @@ void calculate_min_distances(Network *network, double **dist_servers, double **d
         );
 }
 
-double calculate_rtt(int a, int b, double *dists_a, double *dists_b) {
-    return dists_a[b] + dists_b[a];
+double calculate_rtt(int node_a, int node_b, double *dists_a, double *dists_b) {
+    return dists_a[node_b] + dists_b[node_a];
 }
 
-void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, double **dist_servers, double **dist_clients, double **dist_monitors) {
+void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, double **server_distances, double **client_distances, double **monitor_distances) {
     int num_servers = network_get_num_servers(network);
     int num_clients = network_get_num_clients(network);
     int num_monitors = network_get_num_monitors(network);
 
-    for (int i = 0; i < num_servers; i++) {
-        int server = network_get_server(network, i);
-        for (int j = 0; j < num_clients; j++) {
-            int client = network_get_client(network, j);
-            double rtt = calculate_rtt(
-                server, 
-                client, 
-                dist_servers[i], 
-                dist_clients[j]
+    for (int server_idx = 0; server_idx < num_servers; server_idx++) {
+        int server_id = network_get_server(network, server_idx);
+        for (int client_idx = 0; client_idx < num_clients; client_idx++) {
+            int client_id = network_get_client(network, client_idx);
+            double direct_rtt = calculate_rtt(
+                server_id, 
+                client_id, 
+                server_distances[server_idx], 
+                client_distances[client_idx]
             );
 
-            double min_rtt_star = DBL_MAX;
-            for (int k = 0; k < num_monitors; k++) {
-                int monitor = network_get_monitor(network, k);
-                double rtt_star = calculate_rtt(server, monitor, dist_servers[i], dist_monitors[k]) +
-                                  calculate_rtt(monitor, client, dist_monitors[k], dist_clients[j]);
+            double min_rtt_via_monitor = DBL_MAX;
+            for (int monitor_idx = 0; monitor_idx < num_monitors; monitor_idx++) {
+                int monitor_id = network_get_monitor(network, monitor_idx);
+                double rtt_via_monitor = calculate_rtt(
+                                            server_id, 
+                                            monitor_id, 
+                                            server_distances[server_idx], 
+                                            monitor_distances[monitor_idx]
+                                        ) 
+                                        +
+                                        calculate_rtt(
+                                            monitor_id, 
+                                            client_id, 
+                                            monitor_distances[monitor_idx],
+                                            client_distances[client_idx]
+                                        );
 
-                if (rtt_star < min_rtt_star) 
-                    min_rtt_star = rtt_star;
+                if (rtt_via_monitor < min_rtt_via_monitor) 
+                    min_rtt_via_monitor = rtt_via_monitor;
             }
 
-            (&round_trip_times[i * num_clients + j])->src = network_get_server(network, i);
-            (&round_trip_times[i * num_clients + j])->dest = network_get_client(network, j);
-            (&round_trip_times[i * num_clients + j])->rtt = min_rtt_star / rtt;
+            int rtt_index = server_idx * num_clients + client_idx;
+            (&round_trip_times[rtt_index])->src = server_id;
+            (&round_trip_times[rtt_index])->dest = client_id;
+            (&round_trip_times[rtt_index])->rtt = min_rtt_via_monitor / direct_rtt;
         }
     }
 }
 
-void print_rtt(Network *network, RoundTripTime *round_trip_times,char *output_file) {
+void print_and_destroy(Network *network, RoundTripTime *round_trip_times,char *output_file, double **dist_servers, double **dist_clients, double **dist_monitors) {
     FILE *file = fopen(output_file, "w");
     if (file == NULL)
-        exit(printf("Error: print_rtt failed to open file\n"));
+        exit(printf("Error: print_and_destroy failed to open file\n"));
 
     int num_servers = network_get_num_servers(network);
     int num_clients = network_get_num_clients(network);
+    int num_monitors = network_get_num_monitors(network);
 
-    for (int i = 0; i < num_servers * num_clients; i++)
+    int count_servers = 0;
+    int count_clients = 0;
+    int count_monitors = 0;
+
+    for (int i = 0; i < num_servers * num_clients; i++) {
         fprintf(
             file, 
             "%d %d %.16lf\n",
@@ -112,8 +129,20 @@ void print_rtt(Network *network, RoundTripTime *round_trip_times,char *output_fi
             (&round_trip_times[i])->dest, 
             (&round_trip_times[i])->rtt
         );
-
+        if (count_clients < num_clients)    free(dist_clients[count_clients++]);
+        if (count_servers < num_servers)    free(dist_servers[count_servers++]);
+        if (count_monitors < num_monitors)  free(dist_monitors[count_monitors++]);
+    }
     fclose(file);
+
+    for (int i = count_clients; i < num_clients; i++)   free(dist_clients[i]);
+    for (int i = count_servers; i < num_servers; i++)   free(dist_servers[i]);
+    for (int i = count_monitors; i < num_monitors; i++) free(dist_monitors[i]);
+
+    free(dist_servers);
+    free(dist_clients);
+    free(dist_monitors);
+    free(round_trip_times);
 }
 
 void problem_solve(Network *network, char *output_file) {
@@ -154,16 +183,12 @@ void problem_solve(Network *network, char *output_file) {
         round_trip_compare
     );
 
-    print_rtt(network, round_trip_times, output_file);
-
-    free(round_trip_times);
-    for (int i = 0; i < num_servers; i++)
-        free(dist_servers[i]);
-    for (int i = 0; i < num_clients; i++)    
-        free(dist_clients[i]);
-    for (int i = 0; i < num_monitors; i++)
-        free(dist_monitors[i]);
-    free(dist_servers);
-    free(dist_clients);
-    free(dist_monitors);
+    print_and_destroy(
+        network, 
+        round_trip_times, 
+        output_file, 
+        dist_servers, 
+        dist_clients, 
+        dist_monitors
+    );
 }

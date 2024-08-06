@@ -103,7 +103,6 @@ Network *network_read(char *file_name) {
     return network;
 }
 
-
 //debug
 // void network_print(Network *network) {
 //     printf("Servers: ");

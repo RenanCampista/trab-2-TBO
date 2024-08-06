@@ -102,3 +102,24 @@ Network *network_read(char *file_name) {
     fclose(file);
     return network;
 }
+
+
+//debug
+// void network_print(Network *network) {
+//     printf("Servers: ");
+//     for (int i = 0; i < network->num_servers; i++)
+//         printf("%d ", network->servers[i]);
+//     printf("\n");
+
+//     printf("Clients: ");
+//     for (int i = 0; i < network->num_clients; i++)
+//         printf("%d ", network->clients[i]);
+//     printf("\n");
+
+//     printf("Monitors: ");
+//     for (int i = 0; i < network->num_monitors; i++)
+//         printf("%d ", network->monitors[i]);
+//     printf("\n");
+
+//     graph_print(network->graph);
+// }

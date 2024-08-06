@@ -91,3 +91,13 @@ Edge *iterator_next(ForwardListIterator *it) {
     it->edge = it->edge->next;
     return edge;
 }
+
+// debug
+// void forward_list_print(ForwardList *forward_list) {
+//     Edge *edge = forward_list->head;
+//     while (edge != NULL) {
+//         printf("(%d, %d, %.2lf) ", edge->src, edge->dest, edge->cost);
+//         edge = edge->next;
+//     }
+//     printf("\n");
+// }

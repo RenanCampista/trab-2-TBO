@@ -3,12 +3,14 @@
 
 #include "../libs/PQ.h"
 
+
 struct PQ {
     Item *pq;
     int *map;
     int n;
     int size;
 };
+
 
 static void swap(PQ *pq, int i, int j) {
     exch(pq->pq[i], pq->pq[j]);
@@ -47,7 +49,7 @@ PQ *PQ_init(int maxN) {
     return pq;
 }
 
-void PQ_insert(PQ *pq, int data, long double priority) {
+void PQ_insert(PQ *pq, int data, double priority) {
     Item i = {data, priority};
 
     pq->n++;
@@ -68,11 +70,11 @@ int PQ_min(PQ *pq) {
     return pq->pq[1].id;
 }
 
-long double PQ_get_priority(PQ *pq, int id) {
+double PQ_get_priority(PQ *pq, int id) {
     return pq->pq[pq->map[id]].value;
 }
 
-void PQ_decrease_key(PQ *pq, int id, long double value) {
+void PQ_decrease_key(PQ *pq, int id, double value) {
     int i = pq->map[id];
     value(pq->pq[i]) = value;
     fix_up(pq, pq->pq, i);

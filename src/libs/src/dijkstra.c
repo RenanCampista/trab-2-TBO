@@ -4,41 +4,50 @@
 
 #include "../libs/PQ.h"
 #include "../libs/dijkstra.h"
+#include "../libs/forward_list.h"
 
-void initialize_single_source(Graph *graph, PQ *h, long double *dist, int src) {
-    int num_nodes = graph_get_num_nodes(graph);
+
+void initialize_single_source(PQ *pq, double *dist, int src, int num_nodes) {
     for (int i = 0; i < num_nodes; i++) {
-        PQ_insert(h, i, i == src ? 0.0 : DBL_MAX);
-        dist[i] = i == src ? 0 : DBL_MAX;
+        dist[i] = DBL_MAX; 
+        PQ_insert(pq, i, DBL_MAX);
     }
+    dist[src] = 0;
+    PQ_decrease_key(pq, src, 0);
 }
 
-void relax(Graph *graph, PQ *h, long double *dist, int u) {
-    int num_nodes = graph_get_num_nodes(graph);
-    long double u_priority = PQ_get_priority(h, u);
+void relax(Graph *graph, PQ *pq, double *dist, int current_node) {
+    double current_priority = dist[current_node];
 
-    for (int i = 0; i < num_nodes; i++) {
-        long double w = graph_get_cost_from_edge(graph, u, i);
-        if (dist[i] > u_priority + w && w != -1) {
-            dist[i] = u_priority + w;
-            PQ_decrease_key(h, i, u_priority + w);
+    ForwardList *edges = graph_get_edges(graph, current_node);
+    if (edges == NULL) return;
+
+    ForwardListIterator *it = iterator_init(edges);
+    while (iterator_has_next(it)) {
+        Node *node = iterator_next(it);
+        if (node == NULL) continue;
+
+        int dest_node = node_get_dest(node);
+        double edge_cost = node_get_cost(node);
+        if (dist[dest_node] > current_priority + edge_cost) {
+            dist[dest_node] = current_priority + edge_cost;
+            PQ_decrease_key(pq, dest_node, current_priority + edge_cost);
         }
     }
+    iterator_finish(it);
 }
 
-long double *dijkstra_algorithm(Graph *graph, int src) {
+double *dijkstra_algorithm(Graph *graph, int src) {
     int num_nodes = graph_get_num_nodes(graph);
-    PQ *h = PQ_init(num_nodes);
-    long double *dist = calloc(num_nodes, sizeof(long double));
+    double *dist = malloc(num_nodes * sizeof(double));
+    if (dist == NULL)
+        exit(printf("Errror: dijkstra_algorithm: failed to allocate memory\n"));
+    PQ *pq = PQ_init(num_nodes);
 
-    initialize_single_source(graph, h, dist, src);
+    initialize_single_source(pq, dist, src, num_nodes);
+    while (!PQ_empty(pq))
+        relax(graph, pq, dist, PQ_delmin(pq));
 
-    while (!PQ_empty(h)) {
-        int u = PQ_min(h);
-        PQ_delmin(h);
-        relax(graph, h, dist, u);
-    }
-
-    PQ_finish(h);
+    PQ_finish(pq);
     return dist;
 }

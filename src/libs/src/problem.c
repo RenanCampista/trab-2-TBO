@@ -1,146 +1,194 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 
 #include "../libs/network.h"
 #include "../libs/dijkstra.h"
 #include "../libs/problem.h"
-#include "../libs/round_trip_time.h"
 
-typedef struct Problem Problem;
-struct Problem {
-    Network *network;
-    RoundTripTime **round_trip_times;
-    long double **dist_servers;
-    long double **dist_clients;
-    long double **dist_monitors;
+
+typedef struct RoundTripTime RoundTripTime;
+struct RoundTripTime {
+    int src;
+    int dest;
+    double rtt;
 };
 
-Problem *problem_construct(Network *network) {
-    Problem *problem = (Problem *) calloc(1, sizeof(Problem));
-    if (problem == NULL)
-        exit(printf("Error: problem_construct failed to allocate memory.\n"));
 
-    problem->network = network;
-    problem->round_trip_times = (RoundTripTime **) calloc(network_get_num_servers(network) * network_get_num_clients(network), sizeof(RoundTripTime *));
+int round_trip_compare(const void *a, const void *b) {
+    RoundTripTime *round_trip_time_a = (RoundTripTime *)a;
+    RoundTripTime *round_trip_time_b = (RoundTripTime *)b;
 
-    problem->dist_clients = (long double **) calloc(network_get_num_clients(network), sizeof(long double *));
-    problem->dist_servers = (long double **) calloc(network_get_num_servers(network), sizeof(long double *));
-    problem->dist_monitors = (long double **) calloc(network_get_num_monitors(network), sizeof(long double *));
-
-    if (problem->round_trip_times == NULL || problem->dist_clients == NULL || problem->dist_servers == NULL || problem->dist_monitors == NULL)
-        exit(printf("Error: problem_construct failed to allocate memory.\n"));
-
-    return problem;
-
-}
-
-void problem_destruct(Problem *problem) {
-    for (int i = 0; i < network_get_num_servers(problem->network) * network_get_num_clients(problem->network); i++)
-        round_trip_time_destruct(problem->round_trip_times[i]);
-    
-    for (int i = 0; i < network_get_num_clients(problem->network); i++)
-        free(problem->dist_clients[i]);
-
-    for (int i = 0; i < network_get_num_servers(problem->network); i++)
-        free(problem->dist_servers[i]);
-
-    for (int i = 0; i < network_get_num_monitors(problem->network); i++)
-        free(problem->dist_monitors[i]);
-
-    free(problem->round_trip_times);
-    free(problem->dist_clients);
-    free(problem->dist_servers);
-    free(problem->dist_monitors);
-    free(problem);
-}
-
-void problem_calculate_min_costs_from_edges(Problem *problem) {
-    for (int i = 0; i < network_get_num_servers(problem->network); i++)
-        problem->dist_servers[i] = dijkstra_algorithm(network_get_graph(problem->network), network_get_server(problem->network, i));
-
-    for (int i = 0; i < network_get_num_clients(problem->network); i++)
-        problem->dist_clients[i] = dijkstra_algorithm(network_get_graph(problem->network), network_get_client(problem->network, i));
-
-    for (int i = 0; i < network_get_num_monitors(problem->network); i++)
-        problem->dist_monitors[i] = dijkstra_algorithm(network_get_graph(problem->network), network_get_monitor(problem->network, i));
-}
-
-long double RTT(int a, int b, long double *dists_a, long double *dists_b) {
-    return dists_a[b] + dists_b[a];
-}
-
-void problem_process_rtt(Problem *problem) {
-    long double min = 0;
-    long double rtt = 0;
-    long double rtt_star= 0;
-
-    for (int i = 0; i < network_get_num_servers(problem->network); i++) {
-        for (int j = 0; j < network_get_num_clients(problem->network); j++) {
-            rtt = RTT(
-                network_get_server(problem->network, i), 
-                network_get_client(problem->network, j), 
-                problem->dist_servers[i], 
-                problem->dist_clients[j]
-            );
-
-            for (int k = 0; k < network_get_num_monitors(problem->network); k++) {
-                rtt_star = RTT(
-                    network_get_server(problem->network, i), 
-                    network_get_monitor(problem->network, k), 
-                    problem->dist_servers[i], 
-                    problem->dist_monitors[k]
-                ) + RTT(
-                    network_get_monitor(problem->network, k), 
-                    network_get_client(problem->network, j), 
-                    problem->dist_monitors[k], 
-                    problem->dist_clients[j]
-                );
-
-                if (rtt_star < min || k == 0) {
-                    min = rtt_star;
-                }
-            }
-
-            rtt_star = min;
-            problem->round_trip_times[
-                i * network_get_num_clients(problem->network) + j
-            ] = round_trip_time_construct(
-                network_get_server(problem->network, i), 
-                network_get_client(problem->network, j), 
-                rtt_star / rtt
-            );
+    if (round_trip_time_a->rtt < round_trip_time_b->rtt)                    return -1;
+    else if (round_trip_time_a->rtt > round_trip_time_b->rtt)               return 1;
+    else {
+        if (round_trip_time_a->src < round_trip_time_b->src)                return -1;
+        else if (round_trip_time_a->src > round_trip_time_b->src)           return 1;
+        else {
+            if (round_trip_time_a->dest < round_trip_time_b->dest)          return -1;
+            else if (round_trip_time_a->dest > round_trip_time_b->dest)     return 1;
+            else                                                            return 0;
         }
     }
 }
 
-void problem_print(Problem *problem, char *output_file) {
+void calculate_min_distances(Network *network, double **dist_servers, double **dist_clients, double **dist_monitors) {
+    int num_servers = network_get_num_servers(network);
+    int num_clients = network_get_num_clients(network);
+    int num_monitors = network_get_num_monitors(network);
+    Graph *graph = network_get_graph(network);
+
+    for (int i = 0; i < num_servers; i++)
+        dist_servers[i] = dijkstra_algorithm(
+            graph, 
+            network_get_server(network, i)
+        );
+
+
+    for (int i = 0; i < num_clients; i++)
+        dist_clients[i] = dijkstra_algorithm(
+            graph, 
+            network_get_client(network, i)
+        );
+
+
+    for (int i = 0; i < num_monitors; i++)
+        dist_monitors[i] = dijkstra_algorithm(
+            graph, 
+            network_get_monitor(network, i)
+        );
+}
+
+double calculate_rtt(int node_a, int node_b, double *dists_a, double *dists_b) {
+    return dists_a[node_b] + dists_b[node_a];
+}
+
+void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, double **server_distances, double **client_distances, double **monitor_distances) {
+    int num_servers = network_get_num_servers(network);
+    int num_clients = network_get_num_clients(network);
+    int num_monitors = network_get_num_monitors(network);
+
+    for (int server_idx = 0; server_idx < num_servers; server_idx++) {
+        int server_id = network_get_server(network, server_idx);
+        for (int client_idx = 0; client_idx < num_clients; client_idx++) {
+            int client_id = network_get_client(network, client_idx);
+            double direct_rtt = calculate_rtt(
+                server_id, 
+                client_id, 
+                server_distances[server_idx], 
+                client_distances[client_idx]
+            );
+
+            double min_rtt_via_monitor = DBL_MAX;
+            for (int monitor_idx = 0; monitor_idx < num_monitors; monitor_idx++) {
+                int monitor_id = network_get_monitor(network, monitor_idx);
+                double rtt_via_monitor = calculate_rtt(
+                                            server_id, 
+                                            monitor_id, 
+                                            server_distances[server_idx], 
+                                            monitor_distances[monitor_idx]
+                                        ) 
+                                        +
+                                        calculate_rtt(
+                                            monitor_id, 
+                                            client_id, 
+                                            monitor_distances[monitor_idx],
+                                            client_distances[client_idx]
+                                        );
+
+                if (rtt_via_monitor < min_rtt_via_monitor) 
+                    min_rtt_via_monitor = rtt_via_monitor;
+            }
+
+            int rtt_index = server_idx * num_clients + client_idx;
+            (&round_trip_times[rtt_index])->src = server_id;
+            (&round_trip_times[rtt_index])->dest = client_id;
+            (&round_trip_times[rtt_index])->rtt = min_rtt_via_monitor / direct_rtt;
+        }
+    }
+}
+
+void print_and_destroy(Network *network, RoundTripTime *round_trip_times,char *output_file, double **dist_servers, double **dist_clients, double **dist_monitors) {
     FILE *file = fopen(output_file, "w");
     if (file == NULL)
-        exit(printf("Error: problem_print failed to open file.\n"));
+        exit(printf("Error: print_and_destroy failed to open file\n"));
 
-    for (int i = 0; i < network_get_num_servers(problem->network) * network_get_num_clients(problem->network); i++) {
+    int num_servers = network_get_num_servers(network);
+    int num_clients = network_get_num_clients(network);
+    int num_monitors = network_get_num_monitors(network);
+
+    int count_servers = 0;
+    int count_clients = 0;
+    int count_monitors = 0;
+
+    for (int i = 0; i < num_servers * num_clients; i++) {
         fprintf(
             file, 
-            "%d %d %.16Lf\n", 
-            round_trip_time_get_src(problem->round_trip_times[i]), 
-            round_trip_time_get_dest(problem->round_trip_times[i]), 
-            round_trip_time_get_rtt(problem->round_trip_times[i])
+            "%d %d %.16lf\n",
+            (&round_trip_times[i])->src, 
+            (&round_trip_times[i])->dest, 
+            (&round_trip_times[i])->rtt
         );
+        if (count_clients < num_clients)    free(dist_clients[count_clients++]);
+        if (count_servers < num_servers)    free(dist_servers[count_servers++]);
+        if (count_monitors < num_monitors)  free(dist_monitors[count_monitors++]);
     }
-
     fclose(file);
+
+    for (int i = count_clients; i < num_clients; i++)   free(dist_clients[i]);
+    for (int i = count_servers; i < num_servers; i++)   free(dist_servers[i]);
+    for (int i = count_monitors; i < num_monitors; i++) free(dist_monitors[i]);
+
+    free(dist_servers);
+    free(dist_clients);
+    free(dist_monitors);
+    free(round_trip_times);
 }
 
 void problem_solve(Network *network, char *output_file) {
-    Problem *problem = problem_construct(network);
-    problem_calculate_min_costs_from_edges(problem);
-    problem_process_rtt(problem);
+    int num_servers = network_get_num_servers(network);
+    int num_clients = network_get_num_clients(network);
+    int num_monitors = network_get_num_monitors(network);
+    RoundTripTime *round_trip_times = malloc(num_servers * num_clients * sizeof(RoundTripTime));
+    double **dist_servers = malloc(num_servers * sizeof(double *));
+    double **dist_clients = malloc(num_clients * sizeof(double *));
+    double **dist_monitors = malloc(num_monitors * sizeof(double *));
+
+    if (
+        round_trip_times == NULL || 
+        dist_servers == NULL || 
+        dist_clients == NULL || 
+        dist_monitors == NULL
+    ) exit(printf("Error: problem_solve failed to allocate memory\n"));
+
+    calculate_min_distances(
+        network, 
+        dist_servers, 
+        dist_clients, 
+        dist_monitors
+    );
+
+    start_processing_rtt(
+        network, 
+        round_trip_times, 
+        dist_servers, 
+        dist_clients, 
+        dist_monitors
+    );
+
     qsort(
-        problem->round_trip_times, 
-        network_get_num_servers(network) * network_get_num_clients(network), 
-        sizeof(RoundTripTime *), 
+        round_trip_times, 
+        num_servers * num_clients,
+        sizeof(RoundTripTime), 
         round_trip_compare
     );
-    problem_print(problem, output_file);
-    problem_destruct(problem);
+
+    print_and_destroy(
+        network, 
+        round_trip_times, 
+        output_file, 
+        dist_servers, 
+        dist_clients, 
+        dist_monitors
+    );
 }

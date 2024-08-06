@@ -4,7 +4,9 @@
 #include "../libs/forward_list.h"
 
 struct Node {
-    data_type data;
+    int src;
+    int dest;
+    long double cost;
     Node *next;
 };
 
@@ -13,95 +15,92 @@ struct ForwardList {
     int size;
 };
 
-Node *node_construct(Node *next, data_type data) {
-    Node *node = (Node *) calloc(1, sizeof(Node));
+struct ForwardListIterator {
+    Node *node;
+};
+
+Node *node_construct(int src, int dest, long double cost, Node *next) {
+    Node *node = malloc(sizeof(Node));
     if (node == NULL)
         exit(printf("Error: node_construct: could not allocate memory.\n"));
+    node->src = src;
+    node->dest = dest;
+    node->cost = cost;
     node->next = next;
-    node->data = data;
     return node;
 }
 
-void node_destruct(Node *node, void (*data_destructor)(data_type)) {
-    if (data_destructor != NULL)
-        data_destructor(node->data);
+void node_destruct(Node *node) {
     free(node);
 }
 
+int node_get_src(Node *node) {
+    return node->src;
+}
+
+int node_get_dest(Node *node) {
+    return node->dest;
+}
+
+long double node_get_cost(Node *node) {
+    return node->cost;
+}
+
 ForwardList *forward_list_construct() {
-    ForwardList *forward_list = (ForwardList *) calloc(1, sizeof(ForwardList));
+    ForwardList *forward_list = malloc(sizeof(ForwardList));
     if (forward_list == NULL)
         exit(printf("Error: forward_list_construct: could not allocate memory.\n"));
+    forward_list->head = NULL;
+    forward_list->size = 0;
     return forward_list;
 }
 
-void forward_list_destruct(ForwardList *forward_list, void (*data_destructor)(data_type)) {
-    Node *it = forward_list->head;
-    Node *next;
-    for (int i = 0; i < forward_list->size; i++) {
-        next = it->next;
-        node_destruct(it, data_destructor);
-        it = next;
+void forward_list_destruct(ForwardList *forward_list) {
+    Node *node = forward_list->head;
+    while (node != NULL) {
+        Node *next = node->next;
+        node_destruct(node);
+        node = next;
     }
     free(forward_list);
+}
+
+void forward_list_push_front(ForwardList *forward_list, int src, int dest, long double cost) {
+    forward_list->head = node_construct(src, dest, cost, forward_list->head);
+    forward_list->size++;
+}
+
+void forward_list_pop_front(ForwardList *forward_list) {
+    if (forward_list->head == NULL)
+        return;
+    Node *node = forward_list->head;
+    forward_list->head = node->next;
+    node_destruct(node);
+    forward_list->size--;
 }
 
 int forward_list_size(ForwardList *forward_list) {
     return forward_list->size;
 }
 
-void forward_list_push_back(ForwardList *forward_list, data_type data) {
-    Node *new_node = node_construct(NULL, data);
-    if (forward_list->head == NULL) {
-        forward_list->head = new_node;
-        new_node->next = forward_list->head;
-    } else {
-        Node *last = forward_list->head;
-        while (last->next != forward_list->head) {
-            last = last->next;
-        }
-        last->next = new_node;
-        new_node->next = forward_list->head;
-    }
-    forward_list->size++;
+ForwardListIterator *iterator_init(ForwardList *forward_list) {
+    ForwardListIterator *it = malloc(sizeof(ForwardListIterator));
+    if (it == NULL)
+        exit(printf("Error: forward_list_iterator_init: could not allocate memory.\n"));
+    it->node = forward_list->head;
+    return it;
 }
 
-data_type forward_list_pop_back(ForwardList *forward_list) {
-    Node *last = forward_list->head;
-    Node *prev = NULL;
-    while (last->next != forward_list->head) {
-        prev = last;
-        last = last->next;
-    }
-    data_type data = last->data;
-    if (prev == NULL) {
-        forward_list->head = NULL;
-    } else {
-        prev->next = forward_list->head;
-    }
-    node_destruct(last, NULL);
-    forward_list->size--;
-    return data;
+void iterator_destruct(ForwardListIterator *it) {
+    free(it);
 }
 
-
-void forward_list_iterator_init(ForwardListIterator *iterator, ForwardList *list) {
-    iterator->list = list;
-    iterator->current = list->head;
+int iterator_has_next(ForwardListIterator *it) {
+    return it->node != NULL;
 }
 
-data_type forward_list_iterator_next(ForwardListIterator *iterator) {
-    if (iterator->current == NULL)
-        return (data_type)0;
-    
-    data_type data = iterator->current->data;
-    iterator->current = iterator->current->next;
-    if (iterator->current == iterator->list->head)
-        iterator->current = NULL;
-
-    return data;
-}
-
-int forward_list_iterator_has_next(ForwardListIterator *iterator) {
-    return iterator->current != NULL;
+Node *iterator_next(ForwardListIterator *it) {
+    Node *node = it->node;
+    it->node = it->node->next;
+    return node;
 }

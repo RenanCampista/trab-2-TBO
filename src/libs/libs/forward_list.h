@@ -1,22 +1,25 @@
 #if !defined(_FORWARD_LIST_H)
 #define _FORWARD_LIST_H
 
-typedef void * data_type;
 typedef struct Node Node;
 typedef struct ForwardList ForwardList;
 typedef struct ForwardListIterator ForwardListIterator;
-struct ForwardListIterator {
-    Node *current;
-    ForwardList *list;
-};
+
+
+Node *node_construct(int src, int dest, long double cost, Node *next);
+void node_destruct(Node *node);
+int node_get_src(Node *node);
+int node_get_dest(Node *node);
+long double node_get_cost(Node *node);
 
 ForwardList *forward_list_construct();
-void forward_list_destruct(ForwardList *forward_list, void (*data_destructor)(data_type));
+void forward_list_destruct(ForwardList *forward_list);
+void forward_list_push_front(ForwardList *forward_list, int src, int dest, long double cost);
+void forward_list_pop_front(ForwardList *forward_list);
 int forward_list_size(ForwardList *forward_list);
-void forward_list_push_back(ForwardList *forward_list, data_type data);
-data_type forward_list_pop_back(ForwardList *forward_list);
 
-void forward_list_iterator_init(ForwardListIterator *iterator, ForwardList *list);
-data_type forward_list_iterator_next(ForwardListIterator *iterator);
-int forward_list_iterator_has_next(ForwardListIterator *iterator);
+ForwardListIterator *iterator_init(ForwardList *forward_list);
+void iterator_destruct(ForwardListIterator *it);
+int iterator_has_next(ForwardListIterator *it);
+Node *iterator_next(ForwardListIterator *it);
 #endif // _FORWARD_LIST_H

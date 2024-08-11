@@ -65,7 +65,8 @@ double calculate_rtt(int node_a, int node_b, double *dists_a, double *dists_b) {
     return dists_a[node_b] + dists_b[node_a];
 }
 
-void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, double **server_distances, double **client_distances, double **monitor_distances) {
+void start_processing_rtt
+(Network *network, RoundTripTime *round_trip_times, double **dist_servers, double **dist_clients, double **dist_monitors) {
     int num_servers = network_get_num_servers(network);
     int num_clients = network_get_num_clients(network);
     int num_monitors = network_get_num_monitors(network);
@@ -80,8 +81,8 @@ void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, dou
             double direct_rtt = calculate_rtt(
                 server_id, 
                 client_id, 
-                server_distances[server_idx], 
-                client_distances[client_idx]
+                dist_servers[server_idx], 
+                dist_clients[client_idx]
             );
 
             //Descobrir o monitor que minimiza o RTT
@@ -93,15 +94,15 @@ void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, dou
                 double rtt_via_monitor = calculate_rtt(
                                             server_id, 
                                             monitor_id, 
-                                            server_distances[server_idx], 
-                                            monitor_distances[monitor_idx]
+                                            dist_servers[server_idx], 
+                                            dist_monitors[monitor_idx]
                                         ) 
                                         +
                                         calculate_rtt(
                                             monitor_id, 
                                             client_id, 
-                                            monitor_distances[monitor_idx],
-                                            client_distances[client_idx]
+                                            dist_monitors[monitor_idx],
+                                            dist_clients[client_idx]
                                         );
 
                 if (rtt_via_monitor < min_rtt_via_monitor) 
@@ -117,7 +118,8 @@ void start_processing_rtt(Network *network, RoundTripTime *round_trip_times, dou
     }
 }
 
-void print_and_destroy(Network *network, RoundTripTime *round_trip_times,char *output_file, double **dist_servers, double **dist_clients, double **dist_monitors) {
+void print_and_destroy
+(Network *network, RoundTripTime *round_trip_times,char *output_file, double **dist_servers, double **dist_clients, double **dist_monitors) {
     FILE *file = fopen(output_file, "w");
     if (file == NULL)
         exit(printf("Error: print_and_destroy failed to open file\n"));

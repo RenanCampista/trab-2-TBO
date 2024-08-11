@@ -1,7 +1,11 @@
+CFLAGS = -Wall -Wextra -Werror
+
 all:
-	gcc -Wall -Wextra -Werror -o trab2 src/client/main.c src/libs/src/*.c
+	gcc $(CFLAGS) -o trab2 src/client/main.c src/libs/src/*.c
 clean:
-	rm trab2
+	rm -f trab2
+debug:
+	gcc $(CFLAGS) -DDEBUG_MODE -o trab2 src/client/main.c src/libs/src/*.c
 run:
 	./trab2 input/N10_S3_C3_M3.txt output/N10_S3_C3_M3-output.txt
 	./trab2 input/N100_S20_C30_M5.txt output/N100_S20_C30_M5-output.txt

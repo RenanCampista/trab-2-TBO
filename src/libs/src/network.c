@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../libs/network.h"
+#include "../include/network.h"
 
 
 struct Network {

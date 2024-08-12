@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../libs/graph.h"
+#include "../include/graph.h"
 
 
 struct Graph {

@@ -2,22 +2,25 @@
 #include <stdlib.h>
 #include <float.h>
 
-#include "../libs/PQ.h"
-#include "../libs/dijkstra.h"
-#include "../libs/forward_list.h"
+#include "../include/PQ.h"
+#include "../include/dijkstra.h"
+#include "../include/forward_list.h"
 
 
-void initialize_single_source(PQ *pq, double *dist, int src, int num_nodes) {
-    for (int i = 0; i < num_nodes; i++) {
-        dist[i] = i == src ? 0 : DBL_MAX;
-        PQ_insert(pq, i, dist[i]);
-    }
-    dist[src] = 0;
-    PQ_decrease_key(pq, src, 0);
+double* initialize_single_source(PQ *pq, int src, int num_nodes) {
+    double *dist = (double *)malloc(num_nodes * sizeof(double));
+    if (dist == NULL)
+        exit(printf("Error: initialize_single_source failed to allocate memory.\n"));
+
+    for (int i = 0; i < num_nodes; i++) 
+        PQ_insert(pq, i, dist[i] = DBL_MAX);
+    
+    PQ_decrease_key(pq, src, dist[src] = 0);
+    return dist;
 }
 
 void relax(Graph *graph, PQ *pq, double *dist, int current_node) {
-    double current_priority = dist[current_node];
+    double current_cost = dist[current_node];
     ForwardList *edges = graph_get_edges(graph, current_node);
     if (edges == NULL) return;
 
@@ -28,24 +31,17 @@ void relax(Graph *graph, PQ *pq, double *dist, int current_node) {
 
         int dest_edge = edge_get_dest(edge);
         double edge_cost = edge_get_cost(edge);
-        // Se a dist até o destino for maior que a dist até o vértice atual + o custo da aresta, atualiza a dist.
-        if (dist[dest_edge] > current_priority + edge_cost) {
-            dist[dest_edge] = current_priority + edge_cost;
-            // Atualiza a prioridade do vértice na PQ.
-            PQ_decrease_key(pq, dest_edge, current_priority + edge_cost);
-        }
+        // Se dist ate o destino > que dist ate o vertice atual + o custo da aresta, att a dist e pq
+        if (dist[dest_edge] > current_cost + edge_cost)
+            PQ_decrease_key(pq, dest_edge, dist[dest_edge] = current_cost + edge_cost);
     }
     iterator_finish(it);
 }
 
-double *dijkstra_algorithm(Graph *graph, int src) {
-    int num_nodes = graph_get_num_nodes(graph);
-    double *dist = malloc(num_nodes * sizeof(double));
-    if (dist == NULL)
-        exit(printf("Errror: dijkstra_algorithm: failed to allocate memory\n"));
+double *dijkstra(Graph *graph, int src, int num_nodes) {
     PQ *pq = PQ_init(num_nodes);
-
-    initialize_single_source(pq, dist, src, num_nodes);
+    double *dist = initialize_single_source(pq, src, num_nodes);
+    
     while (!PQ_empty(pq))
         relax(graph, pq, dist, PQ_delmin(pq));
 

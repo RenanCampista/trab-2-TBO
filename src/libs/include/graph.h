@@ -1,7 +1,7 @@
 #if !defined(_GRAPH_H_)
 #define _GRAPH_H_
 
-#include "../libs/forward_list.h"
+#include "forward_list.h"
 
 
 typedef struct Graph Graph;

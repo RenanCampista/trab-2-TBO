@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../libs/PQ.h"
+#include "../include/PQ.h"
 
 
 typedef struct {

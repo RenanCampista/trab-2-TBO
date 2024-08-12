@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../libs/forward_list.h"
+#include "../include/forward_list.h"
 
 
 struct Edge {

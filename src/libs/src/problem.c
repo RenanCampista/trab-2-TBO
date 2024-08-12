@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <float.h>
 
-#include "../libs/network.h"
-#include "../libs/dijkstra.h"
-#include "../libs/problem.h"
+#include "../include/network.h"
+#include "../include/dijkstra.h"
+#include "../include/problem.h"
 
 
 typedef struct RoundTripTime RoundTripTime;

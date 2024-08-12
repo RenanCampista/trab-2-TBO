@@ -3,8 +3,8 @@
 
 #include <time.h>
 
-#include "../libs/libs/network.h"
-#include "../libs/libs/problem.h"
+#include "../libs/include/network.h"
+#include "../libs/include/problem.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 3)

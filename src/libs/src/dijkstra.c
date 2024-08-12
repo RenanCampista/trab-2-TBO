@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <float.h>
 
-#include "../libs/PQ.h"
-#include "../libs/dijkstra.h"
-#include "../libs/forward_list.h"
+#include "../include/PQ.h"
+#include "../include/dijkstra.h"
+#include "../include/forward_list.h"
 
 
 double* initialize_single_source(PQ *pq, int src, int num_nodes) {

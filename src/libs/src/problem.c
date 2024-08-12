@@ -33,33 +33,17 @@ int round_trip_compare(const void *a, const void *b) {
     }
 }
 
-void calculate_min_distances(Network *network, double **dist_servers, double **dist_clients, double **dist_monitors) {
-    int num_servers = network_get_num_servers(network);
-    int num_clients = network_get_num_clients(network);
-    int num_monitors = network_get_num_monitors(network);
-    int num_nodes = network_get_num_nodes(network);
+double **calculate_distances(Network *network, int size, int network_get_node(Network *, int)) {
+    double **dists = malloc(size * sizeof(double *));
+    if (dists == NULL) 
+        exit(printf("Error: init_distances failed to allocate memory\n"));
+
     Graph *graph = network_get_graph(network);
+    int num_nodes = network_get_num_nodes(network);
+    for (int i = 0; i < size; i++)
+        dists[i] = dijkstra(graph, network_get_node(network, i), num_nodes);
 
-    for (int i = 0; i < num_servers; i++)
-        dist_servers[i] = dijkstra_algorithm(
-            graph, 
-            network_get_server(network, i),
-            num_nodes
-        );
-
-    for (int i = 0; i < num_clients; i++)
-        dist_clients[i] = dijkstra_algorithm(
-            graph, 
-            network_get_client(network, i),
-            num_nodes
-        );
-
-    for (int i = 0; i < num_monitors; i++)
-        dist_monitors[i] = dijkstra_algorithm(
-            graph, 
-            network_get_monitor(network, i),
-            num_nodes
-        );
+    return dists;
 }
 
 RoundTripTime * start_processing_rtt
@@ -73,22 +57,22 @@ RoundTripTime * start_processing_rtt
         exit(printf("Error: start_processing_rtt failed to allocate memory\n"));
     
     for (int server_idx = 0; server_idx < num_servers; server_idx++) {
-        int id_server = network_get_server(network, server_idx);
+        int server = network_get_server(network, server_idx);
 
         for (int client_idx = 0; client_idx < num_clients; client_idx++) {
-            int id_client = network_get_client(network, client_idx);
+            int client = network_get_client(network, client_idx);
 
-            double rtt_server_client = dist_servers[server_idx][id_client]
-                                        + dist_clients[client_idx][id_server];
+            double rtt_server_client = dist_servers[server_idx][client]
+                                        + dist_clients[client_idx][server];
             double min_rtt_monitor = DBL_MAX;
             //Descobrir o monitor que minimiza o rtt
             for (int monitor_idx = 0; monitor_idx < num_monitors; monitor_idx++) {
-                int id_monitor = network_get_monitor(network, monitor_idx);
+                int monitor = network_get_monitor(network, monitor_idx);
 
-                double rtt_monitor_server = dist_monitors[monitor_idx][id_server] 
-                                            + dist_servers[server_idx][id_monitor];
-                double rtt_monitor_client = dist_monitors[monitor_idx][id_client] 
-                                            + dist_clients[client_idx][id_monitor];
+                double rtt_monitor_server = dist_monitors[monitor_idx][server] 
+                                            + dist_servers[server_idx][monitor];
+                double rtt_monitor_client = dist_monitors[monitor_idx][client] 
+                                            + dist_clients[client_idx][monitor];
                 double full_rtt_monitor = rtt_monitor_server + rtt_monitor_client;
                 
                 min_rtt_monitor = full_rtt_monitor < min_rtt_monitor ? full_rtt_monitor : min_rtt_monitor;
@@ -96,8 +80,8 @@ RoundTripTime * start_processing_rtt
 
             // Indice de uma matriz "unidimensional" -> linha * num_colunas + coluna.
             int rtt_index = server_idx * num_clients + client_idx;
-            (&rtt[rtt_index])->server = id_server;
-            (&rtt[rtt_index])->client = id_client;
+            (&rtt[rtt_index])->server = server;
+            (&rtt[rtt_index])->client = client;
             (&rtt[rtt_index])->inflation = rtt_server_client > 0 ? min_rtt_monitor / rtt_server_client : 0;
         }
     }
@@ -149,22 +133,9 @@ void problem_solve(Network *network, char *output_file) {
     int num_servers = network_get_num_servers(network);
     int num_clients = network_get_num_clients(network);
     int num_monitors = network_get_num_monitors(network);
-    double **dist_servers = malloc(num_servers * sizeof(double *));
-    double **dist_clients = malloc(num_clients * sizeof(double *));
-    double **dist_monitors = malloc(num_monitors * sizeof(double *));
-
-    if (
-        dist_servers == NULL || 
-        dist_clients == NULL || 
-        dist_monitors == NULL
-    ) exit(printf("Error: problem_solve failed to allocate memory\n"));
-
-    calculate_min_distances(
-        network, 
-        dist_servers, 
-        dist_clients, 
-        dist_monitors
-    );
+    double **dist_servers = calculate_distances(network, num_servers, network_get_server);
+    double **dist_clients = calculate_distances(network, num_clients, network_get_client);
+    double **dist_monitors = calculate_distances(network, num_monitors, network_get_monitor);
 
     RoundTripTime * rtt = start_processing_rtt(
         network, 

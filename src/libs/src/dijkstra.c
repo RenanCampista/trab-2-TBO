@@ -38,7 +38,7 @@ void relax(Graph *graph, PQ *pq, double *dist, int current_node) {
     iterator_finish(it);
 }
 
-double *dijkstra_algorithm(Graph *graph, int src, int num_nodes) {
+double *dijkstra(Graph *graph, int src, int num_nodes) {
     PQ *pq = PQ_init(num_nodes);
     double *dist = initialize_single_source(pq, src, num_nodes);
     

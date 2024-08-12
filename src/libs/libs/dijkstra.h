@@ -9,8 +9,9 @@
  * 
  * @param graph Grafo.
  * @param src Vértice de origem.
+ * @param num_nodes Número de vértices do grafo.
  * @return double* Vetor de distâncias mínimas.
  */
-double *dijkstra_algorithm(Graph *graph, int src);
+double *dijkstra_algorithm(Graph *graph, int src, int num_nodes);
 
 #endif // _DIJKSTRA_H_
